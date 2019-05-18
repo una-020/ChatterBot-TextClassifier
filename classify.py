@@ -9,7 +9,8 @@ def train_classifier(X, y, C):
         C=C,
         solver='lbfgs',
         max_iter=10000,
-        n_jobs=-1
+        n_jobs=-1,
+        class_weight='balanced'
     )
     cls.fit(X, y)
     return cls
