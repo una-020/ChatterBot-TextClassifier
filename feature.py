@@ -46,6 +46,30 @@ def main():
         sentences = parseData("news/sarcasm.json")
         labels = parseLabel("news/sarcasm.json", "is_sarcastic")
 
+    elif sys.argv[1] == "blog-age":
+        from blogdata_fetch import get_blog_data, get_age
+
+        sentences = get_blog_data() 
+        labels = get_age() 
+
+    elif sys.argv[1] == "blog-gender":
+        from blogdata_fetch import get_blog_data, get_gender
+
+        sentences = get_blog_data()
+        labels = get_gender()
+
+    elif sys.argv[1] == "blog-sunsign":
+        from blogdata_fetch import get_blog_data, get_sunsign
+
+        sentences = get_blog_data()
+        labels = get_sunsign()
+
+    elif sys.argv[1] == "blog-profession":
+        from blogdata_fetch import get_blog_data, get_profession
+
+        sentences = get_blog_data()
+        labels = get_profession()
+
     X, Y, vect, labeler = getXYBasic(sentences, labels)
     print(len(sentences), len(labels))
     print(X.shape, Y.shape, labeler.classes_)
