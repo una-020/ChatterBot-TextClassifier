@@ -16,7 +16,10 @@ for filename in glob.glob("blogs/*.xml"):
 		for line in file.readlines():
 			if line[:1].decode('UTF-8').isalpha():
 				line = line.decode("utf-8")
-				text.write(line)
+				line = line.replace("\n","")
+				line = line.replace("\r","")
+				line = line.replace("\t","")
+				text.write(line+"\n")
 				gender_text.write(categories[1]+"\n")
 				age_text.write(categories[2]+"\n")
 				profession_text.write(categories[3]+"\n")

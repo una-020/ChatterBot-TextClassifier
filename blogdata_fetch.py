@@ -1,9 +1,11 @@
 def get_blog_data(file="./blogs/blogs.txt"):
     blogs_list = []
-    with open(file, "r") as blogs_file:
-        for blog in blogs_file.readlines():
-            blogs_list.append(blog)
-    return blog
+    for blog in open(file):
+        blogs_list.append(blog)
+    # with open(file, "r") as blogs_file:
+        # for blog in blogs_file.readlines():
+            # blogs_list.append(blog)
+    return blogs_list
          
 
 def get_gender(file="./blogs/gender.txt"):
