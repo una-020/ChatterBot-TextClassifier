@@ -33,12 +33,14 @@ def main():
 
         sentences = parseData("news/uci.csv")
         labels = parseLabel("news/uci.csv", "CATEGORY")
+
     elif sys.argv[1] == "turks":
         from turksParser import parseData
         from turksParser import parseLabel
 
         sentences = parseData("news/turks.json")
         labels = parseLabel("news/turks.json", "label")
+
     elif sys.argv[1] == "sarcasm":
         from sarcasmParser import parseData
         from sarcasmParser import parseLabel
@@ -69,6 +71,13 @@ def main():
 
         sentences = get_blog_data()
         labels = get_profession()
+
+    elif sys.argv[1] == "sentiment":
+        from sentimentParser import parseData
+        from sentimentParser import parseLabel
+
+        sentences = parseData("sentiment/sentiment.csv")
+        labels = parseLabel("sentiment/sentiment.csv")
 
     X, Y, vect, labeler = getXYBasic(sentences, labels)
     print(len(sentences), len(labels))

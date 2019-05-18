@@ -1,5 +1,5 @@
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import KFold
+from sklearn.model_selection import StratifiedKFold
 import pickle as pkl
 
 
@@ -46,10 +46,10 @@ def pipeline(X, y, dX, dy, verbose=False):
 def main():
     X = pkl.load(open("X.pkl", "rb"))
     Y = pkl.load(open("Y.pkl", "rb"))
-    kf = KFold(n_splits=4, shuffle=True)
+    kf = StratifiedKFold(n_splits=4, shuffle=True)
     avg_acc = 0
     avg_cnt = 0
-    for train_index, test_index in kf.split(X):
+    for train_index, test_index in kf.split(X,Y):
         trainX, testX = X[train_index], X[test_index]
         trainY, testY = Y[train_index], Y[test_index]
         cls = train_classifier(trainX, trainY, 1)
