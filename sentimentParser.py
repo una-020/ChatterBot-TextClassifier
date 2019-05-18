@@ -37,7 +37,7 @@ def main():
     # # Save final file 
     # df_sentiment.to_csv("sentiment/sentiment.csv", index = False)
 
-    file_path = "sentiment/sentiment.csv"
+    file_path = "data/sentiment/sentiment.csv"
     sents = parseData(file_path)
     labels = parseLabel(file_path)
     print(len(sents), len(labels))

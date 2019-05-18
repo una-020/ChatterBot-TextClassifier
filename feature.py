@@ -76,8 +76,8 @@ def main():
         from sentimentParser import parseData
         from sentimentParser import parseLabel
 
-        sentences = parseData("sentiment/sentiment.csv")
-        labels = parseLabel("sentiment/sentiment.csv")
+        sentences = parseData("data/sentiment/sentiment.csv")
+        labels = parseLabel("data/sentiment/sentiment.csv")
 
     X, Y, vect, labeler = getXYBasic(sentences, labels)
     print(len(sentences), len(labels))
