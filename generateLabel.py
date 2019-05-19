@@ -10,7 +10,7 @@ def getYBasic(labels):
 
 
 def main():
-    assert len(sys.argv) in [1, 2], "Supply dataset type [uci/turks/sarcasm/blog/sentiment], field name [TODO]"
+    assert len(sys.argv) in [2, 3], "Supply dataset type [uci/turks/sarcasm/blog/sentiment], field name gender/sunsign/profession/age"
 
     if sys.argv[1] == "uci":
         from uciParser import parseLabel
@@ -27,10 +27,10 @@ def main():
     elif sys.argv[1] == "blog":
         from blogParser import parseLabel
 
-        if len(sys.argv) == 1:
-            labels = parseLabel("data/blog/TODO")
-        elif len(sys.argv) == 2:
-            labels = parseLabel("data/blog/TODO", sys.argv[2])
+        if len(sys.argv) == 2:
+            labels = parseLabel("data/blog/gender.txt")
+        elif len(sys.argv) == 3:
+            labels = parseLabel("data/blog/{}.txt".format(sys.argv[-1]))
     elif sys.argv[1] == "sentiment":
         from sentimentParser import parseLabel
 

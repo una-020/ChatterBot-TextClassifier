@@ -39,7 +39,7 @@ def main():
     elif sys.argv[1] == "blog":
         from blogParser import parseData
 
-        sentences = parseData("data/blog/TODO")
+        sentences = parseData("data/blog/blogs.txt")
     elif sys.argv[1] == "sentiment":
         from sentimentParser import parseData
 
