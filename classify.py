@@ -50,7 +50,7 @@ def main():
     kf = StratifiedKFold(n_splits=4, shuffle=True)
     avg_acc = 0
     avg_cnt = 0
-    for train_index, test_index in kf.split(X,Y):
+    for train_index, test_index in kf.split(X, Y):
         trainX, testX = X[train_index], X[test_index]
         trainY, testY = Y[train_index], Y[test_index]
         cls = train_classifier(trainX, trainY, 1)
@@ -59,6 +59,8 @@ def main():
         avg_acc += acc
         avg_cnt += 1
     print("Average Accuracy", avg_acc / avg_cnt)
+    cls = train_classifier(X, Y, 1)
+    pkl.dump(cls, open("model.pkl", "wb"))
 
 
 if __name__ == "__main__":

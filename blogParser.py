@@ -17,7 +17,7 @@ def main():
     sents = parseData(file_path)
     labels = parseLabel("data/blog/gender.txt")
     print(len(sents), len(labels))
- 
+
 
 if __name__ == "__main__":
     main()

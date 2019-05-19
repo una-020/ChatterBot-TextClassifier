@@ -8,6 +8,7 @@ def preprocess_periods(sentences):
     new_sentences = []
     for sentence in sentences:
         new_sentence = " ".join(sentence.split("."))
+        new_sentence = new_sentence.lower()
         new_sentences.append(new_sentence)
     return new_sentences
 
@@ -49,6 +50,7 @@ def main():
     print(len(sentences), "sentences found!")
     print(X.shape)
     pkl.dump(X, open("X.pkl", "wb"))
+    pkl.dump(vect, open("Xvect.pkl", "wb"))
 
 
 if __name__ == "__main__":

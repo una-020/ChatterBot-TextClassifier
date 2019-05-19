@@ -39,6 +39,7 @@ def main():
     print(len(labels))
     print(Y.shape, labeler.classes_)
     pkl.dump(Y, open("Y.pkl", "wb"))
+    pkl.dump(labeler, open("Ylabeler.pkl", "wb"))
 
 
 if __name__ == "__main__":
