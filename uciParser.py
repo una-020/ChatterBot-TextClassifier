@@ -9,19 +9,18 @@ def parseData(corpus_path):
     return sentences
 
 
-def parseLabel(corpus_path, field):
-    assert field in ["CATEGORY"]
+def parseLabel(corpus_path):
     df = pd.read_csv(corpus_path)
     labels = []
     for i in range(len(df)):
-        labels.append(df[field][i])
+        labels.append(df["CATEGORY"][i])
     return labels
 
 
 def main():
-    file_path = "news/uci.csv"
+    file_path = "data/news/uci.csv"
     sents = parseData(file_path)
-    labels = parseLabel(file_path, "CATEGORY")
+    labels = parseLabel(file_path)
     print(len(sents), len(labels))
 
 

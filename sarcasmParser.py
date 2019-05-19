@@ -9,19 +9,18 @@ def parseData(corpus_path):
     return sentences
 
 
-def parseLabel(corpus_path, field):
-    assert field in ["is_sarcastic"]
+def parseLabel(corpus_path):
     labels = []
     for data_line in open(corpus_path):
         data = json.loads(data_line)
-        labels.append(data[field])
+        labels.append(data["is_sarcastic"])
     return labels
 
 
 def main():
-    file_path = "news/sarcasm.json"
+    file_path = "data/news/sarcasm.json"
     sents = parseData(file_path)
-    labels = parseLabel(file_path, "is_sarcastic")
+    labels = parseLabel(file_path)
     print(len(sents), len(labels))
 
 
