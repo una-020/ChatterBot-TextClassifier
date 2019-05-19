@@ -14,27 +14,31 @@ def main():
 
     if sys.argv[1] == "uci":
         from uciParser import parseLabel
-
         labels = parseLabel("data/news/uci.csv")
+
     elif sys.argv[1] == "turks":
         from turksParser import parseLabel
-
         labels = parseLabel("data/news/turks.json")
+
+    elif sys.argv[1] == "news":
+        from newsParser import parseLabel
+        labels = parseLabel("data/news/combined_news.csv")
+
     elif sys.argv[1] == "sarcasm":
         from sarcasmParser import parseLabel
-
         labels = parseLabel("data/news/sarcasm.json")
+
     elif sys.argv[1] == "blog":
         from blogParser import parseLabel
-
         if len(sys.argv) == 2:
             labels = parseLabel("data/blog/gender.txt")
         elif len(sys.argv) == 3:
             labels = parseLabel("data/blog/{}.txt".format(sys.argv[-1]))
+
     elif sys.argv[1] == "sentiment":
         from sentimentParser import parseLabel
-
         labels = parseLabel("data/sentiment/sentiment.csv")
+        
     Y, labeler = getYBasic(labels)
     print(len(labels))
     print(Y.shape, labeler.classes_)

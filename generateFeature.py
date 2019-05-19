@@ -27,23 +27,26 @@ def main():
 
     if sys.argv[1] == "uci":
         from uciParser import parseData
-
         sentences = parseData("data/news/uci.csv")
+
     elif sys.argv[1] == "turks":
         from turksParser import parseData
-
         sentences = parseData("data/news/turks.json")
+
+    elif sys.argv[1] == "news":
+        from newsParser import parseData
+        sentences = parseData("data/news/combined_news.csv")
+
     elif sys.argv[1] == "sarcasm":
         from sarcasmParser import parseData
-
         sentences = parseData("data/news/sarcasm.json")
+
     elif sys.argv[1] == "blog":
         from blogParser import parseData
-
         sentences = parseData("data/blog/blogs.txt")
+
     elif sys.argv[1] == "sentiment":
         from sentimentParser import parseData
-
         sentences = parseData("data/sentiment/sentiment.csv")
 
     X, vect = getXBasic(sentences)
