@@ -11,11 +11,13 @@ def parseLabel(corpus_path):
         label_list.append(label)
     return label_list
 
+
 def main():
     file_path = "data/blog/blogs.txt"
     sents = parseData(file_path)
     labels = parseLabel("data/blog/gender.txt")
     print(len(sents), len(labels))
-    
+ 
+
 if __name__ == "__main__":
     main()
