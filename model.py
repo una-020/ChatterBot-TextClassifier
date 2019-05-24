@@ -15,18 +15,18 @@ class Model:
     def predict(self, X, **kwargs):
         pass
 
-    def get_X(self, sentence_list, transform=True):
+    def get_X(self, sentence_list, fit=True):
         pass
 
-    def get_Y(self, label_list, transform=True):
-        if transform:
+    def get_Y(self, label_list, fit=True):
+        if fit:
             self.labeler = preprocessing.LabelEncoder()
             Y = self.labeler.fit_transform(label_list)
         else:
-            Y = self.labeler.fit(label_list)
+            Y = self.labeler.transform(label_list)
         return Y
 
-    def eval(self, y_true, y_pred, average):
+    def eval(self, y_true, y_pred, average=None):
         assert len(y_true) == len(y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(
             y_true,
@@ -45,7 +45,8 @@ class Logistic(Model):
             solver='lbfgs',
             max_iter=10000,
             n_jobs=-1,
-            class_weight='balanced'
+            class_weight='balanced',
+            multi_class="auto"
         )
 
     def train(self, X, Y, **kwargs):
@@ -54,13 +55,13 @@ class Logistic(Model):
     def predict(self, X, **kwargs):
         return self.cls.predict(X)
 
-    def get_X(self, sentence_list, transform=True):
-        if transform:
-            sentence_list = preprocess_periods(sentence_list)
+    def get_X(self, sentence_list, fit=True):
+        sentence_list = preprocess_periods(sentence_list)
+        if fit:
             self.vect = TfidfVectorizer(
                 tokenizer=word_tokenize,
             )
             X = self.vect.fit_transform(sentence_list)
         else:
-            X = self.vect.fit(sentence_list)
+            X = self.vect.transform(sentence_list)
         return X

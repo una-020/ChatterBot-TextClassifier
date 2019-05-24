@@ -8,6 +8,7 @@ def preprocess_periods(sentences):
 
 
 def get_corpus(corpus_name):
+    corpus_name = corpus_name.split("-")[0]
     if corpus_name == "uci":
         from uciParser import parseData
         sentences = parseData("data/news/uci.csv")
@@ -35,7 +36,12 @@ def get_corpus(corpus_name):
     return sentences
 
 
-def get_label(corpus_name, category="gender"):
+def get_label(corpus_name):
+    name_split = corpus_name.split("-")
+    if len(name_split) == 2:
+        category = name_split[1]
+    corpus_name = name_split[0]
+
     if corpus_name == "uci":
         from uciParser import parseLabel
         labels = parseLabel("data/news/uci.csv")

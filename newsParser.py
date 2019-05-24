@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def parseData(corpus_path):
     df = pd.read_csv(corpus_path)
     sentences = []
@@ -14,6 +15,7 @@ def parseLabel(corpus_path):
     for i in range(len(df)):
         labels.append(df["categories"][i])
     return labels
+
 
 def main():
     file_path = "data/news/combined_news.csv"

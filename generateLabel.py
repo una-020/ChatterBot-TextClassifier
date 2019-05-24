@@ -38,7 +38,7 @@ def main():
     elif sys.argv[1] == "sentiment":
         from sentimentParser import parseLabel
         labels = parseLabel("data/sentiment/sentiment.csv")
-        
+
     Y, labeler = getYBasic(labels)
     print(len(labels))
     print(Y.shape, labeler.classes_)
