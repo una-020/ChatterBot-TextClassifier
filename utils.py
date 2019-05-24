@@ -6,6 +6,7 @@ def preprocess_periods(sentences):
         new_sentences.append(new_sentence)
     return new_sentences
 
+
 def get_corpus(corpus_name):
     if corpus_name == "uci":
         from uciParser import parseData

@@ -15,11 +15,11 @@ class Model:
     def predict(self, X, **kwargs):
         pass
 
-    def get_X(self, sentence_list, fit=True):
+    def get_X(self, sentence_list, transform=True):
         pass
 
-    def get_Y(self, label_list, fit=True):
-        if fit:
+    def get_Y(self, label_list, transform=True):
+        if transform:
             self.labeler = preprocessing.LabelEncoder()
             Y = self.labeler.fit_transform(label_list)
         else:
@@ -33,7 +33,8 @@ class Model:
             y_pred,
             average=average
         )
-        return precision, recall, fscore
+        accuracy = accuracy_score(y_true, y_pred)
+        return precision, recall, fscore, accuracy
 
 
 class Logistic(Model):
@@ -53,8 +54,8 @@ class Logistic(Model):
     def predict(self, X, **kwargs):
         return self.cls.predict(X)
 
-    def get_X(self, sentence_list, fit=True):
-        if fit:
+    def get_X(self, sentence_list, transform=True):
+        if transform:
             sentence_list = preprocess_periods(sentence_list)
             self.vect = TfidfVectorizer(
                 tokenizer=word_tokenize,
