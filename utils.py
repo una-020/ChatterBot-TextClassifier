@@ -13,27 +13,27 @@ def preprocess_periods(sentences):
 def get_corpus(corpus_name):
     corpus_name = corpus_name.split("-")[0]
     if corpus_name == "uci":
-        from uciParser import parseData
+        from parsers.uciParser import parseData
         sentences = parseData("data/news/uci.csv")
 
     elif corpus_name == "turks":
-        from turksParser import parseData
+        from parsers.turksParser import parseData
         sentences = parseData("data/news/turks.json")
 
     elif corpus_name == "news":
-        from newsParser import parseData
+        from parsers.newsParser import parseData
         sentences = parseData("data/news/combined_news.csv")
 
     elif corpus_name == "sarcasm":
-        from sarcasmParser import parseData
+        from parsers.sarcasmParser import parseData
         sentences = parseData("data/news/sarcasm.json")
 
     elif corpus_name == "blog":
-        from blogParser import parseData
+        from parsers.blogParser import parseData
         sentences = parseData("data/blog/blogs.txt")
 
     elif corpus_name == "sentiment":
-        from sentimentParser import parseData
+        from parsers.sentimentParser import parseData
         sentences = parseData("data/sentiment/sentiment.csv")
 
     return sentences
@@ -46,27 +46,27 @@ def get_label(corpus_name):
     corpus_name = name_split[0]
 
     if corpus_name == "uci":
-        from uciParser import parseLabel
+        from parsers.uciParser import parseLabel
         labels = parseLabel("data/news/uci.csv")
 
     elif corpus_name == "turks":
-        from turksParser import parseLabel
+        from parsers.turksParser import parseLabel
         labels = parseLabel("data/news/turks.json")
 
     elif corpus_name == "news":
-        from newsParser import parseLabel
+        from parsers.newsParser import parseLabel
         labels = parseLabel("data/news/combined_news.csv")
 
     elif corpus_name == "sarcasm":
-        from sarcasmParser import parseLabel
+        from parsers.sarcasmParser import parseLabel
         labels = parseLabel("data/news/sarcasm.json")
 
     elif corpus_name == "blog":
-        from blogParser import parseLabel
+        from parsers.blogParser import parseLabel
         labels = parseLabel("data/blog/{}.txt".format(category))
 
     elif corpus_name[1] == "sentiment":
-        from sentimentParser import parseLabel
+        from parsers.sentimentParser import parseLabel
         labels = parseLabel("data/sentiment/sentiment.csv")
 
     return labels
