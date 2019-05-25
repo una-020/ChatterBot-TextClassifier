@@ -105,3 +105,11 @@ def save_features_lr(X, Y, model, model_name, corpus_name):
         model.labeler,
         open(model_name + "_" + corpus_name + "_Y_le.pkl", "wb")
     )
+
+
+def get_max_len(sentence_list):
+    max_len = 0
+    for sentence in sentence_list:
+        if len(sentence) > max_len:
+            max_len = len(sentence)
+    return max_len

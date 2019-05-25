@@ -3,8 +3,11 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nltk.tokenize import word_tokenize
+from gensim.models import KeyedVectors
 from sklearn import preprocessing
 from utils import *
+import numpy as np
+import torch.nn as nn
 
 
 class Model:
@@ -64,3 +67,17 @@ class Logistic(Model):
         else:
             X = self.vect.transform(sentence_list)
         return X
+
+
+class NN(Model):
+    def __init__(self, batch_size):
+        self.batch_size = batch_size
+
+    def train():
+        pass
+
+    def predict():
+        pass
+
+    def get_X(self, sentence_list):
+        pass
