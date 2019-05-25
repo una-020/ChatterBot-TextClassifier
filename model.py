@@ -69,9 +69,35 @@ class Logistic(Model):
         return X
 
 
-class NN(Model):
-    def __init__(self, batch_size):
-        self.batch_size = batch_size
+class Lstm(Model, nn.Module):
+    def __init__(self, **kwargs):
+        super(Lstm, self).__init__()
+
+        self.embed_dim = kwargs.get("embed_dim")
+        self.hidden_dim = kwargs.get("hidden_dim", 600)
+        self.num_classes = kwargs.get("num_classes")
+        dropout = kwargs.get("dropout", 0.5)
+        num_layers = kwargs.get("num_layers", 1)
+
+        self.lstm = nn.LSTM(
+            input_size=self.embed_dim,
+            hidden_size=self.hidden_dim,
+            batch_first=True,
+            num_layers=num_layers,
+            dropout=dropout
+        )
+
+        self.decoder = nn.Linear(
+            in_features=self.hidden_dim,
+            out_features=self.num_classes
+        )
+
+    def forward(self, X):
+        o, _ = self.lstm(X)
+        o = o[:, -1, :]
+        o = o.contiguous().view(-1, self.hidden_dim)
+        o = self.decoder(o)
+        return o
 
     def train():
         pass
