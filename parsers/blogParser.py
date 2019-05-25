@@ -13,7 +13,7 @@ def parseLabel(corpus_path):
 
 
 def main():
-    file_path = "data/blog/blogs.txt"
+    file_path = "../data/blog/blogs.txt"
     sents = parseData(file_path)
     labels = parseLabel("data/blog/gender.txt")
     print(len(sents), len(labels))

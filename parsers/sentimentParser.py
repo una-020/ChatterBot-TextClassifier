@@ -18,7 +18,7 @@ def parseLabel(corpus_path):
 
 
 def main():
-    file_path = "data/sentiment/sentiment.csv"
+    file_path = "../data/sentiment/sentiment.csv"
     sents = parseData(file_path)
     labels = parseLabel(file_path)
     print(len(sents), len(labels))
