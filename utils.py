@@ -1,3 +1,6 @@
+import pickle as pkl
+
+
 def preprocess_periods(sentences):
     new_sentences = []
     for sentence in sentences:
@@ -67,3 +70,38 @@ def get_label(corpus_name):
         labels = parseLabel("data/sentiment/sentiment.csv")
 
     return labels
+
+
+def get_features_lr(model, model_name, corpus_name):
+    X = pkl.load(
+        open(model_name + "_" + corpus_name + "_X.pkl", "rb")
+    )
+    Y = pkl.load(
+        open(model_name + "_" + corpus_name + "_Y.pkl", "rb")
+    )
+    model.vect = pkl.load(
+        open(model_name + "_" + corpus_name + "_X_vect.pkl", "rb")
+    )
+    model.labeler = pkl.load(
+        open(model_name + "_" + corpus_name + "_Y_le.pkl", "rb")
+    )
+    return X, Y
+
+
+def save_features_lr(X, Y, model, model_name, corpus_name):
+    pkl.dump(
+        X,
+        open(model_name + "_" + corpus_name + "_X.pkl", "wb")
+    )
+    pkl.dump(
+        Y,
+        open(model_name + "_" + corpus_name + "_Y.pkl", "wb")
+    )
+    pkl.dump(
+        model.vect,
+        open(model_name + "_" + corpus_name + "_X_vect.pkl", "wb")
+    )
+    pkl.dump(
+        model.labeler,
+        open(model_name + "_" + corpus_name + "_Y_le.pkl", "wb")
+    )

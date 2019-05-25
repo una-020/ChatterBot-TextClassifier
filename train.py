@@ -21,23 +21,16 @@ def main():
         model = Logistic(args.C)
 
     try:
-        X = pkl.load(
-            open(args.model + "_" + args.corpus_name + "_X.pkl", "rb")
-        )
-        Y = pkl.load(
-            open(args.model + "_" + args.corpus_name + "_Y.pkl", "rb")
-        )
+        if args.model == "lr":
+            X, Y = get_features_lr(
+                model, args.model, args.corpus_name
+            )
+
     except FileNotFoundError:
-        X = model.get_X(sentences, fit=True)
-        Y = model.get_Y(labels, fit=True)
-        pkl.dump(
-            X,
-            open(args.model + "_" + args.corpus_name + "_X.pkl", "wb")
-        )
-        pkl.dump(
-            Y,
-            open(args.model + "_" + args.corpus_name + "_Y.pkl", "wb")
-        )
+        if args.model == "lr":
+            X = model.get_X(sentences, fit=True)
+            Y = model.get_Y(labels, fit=True)
+            save_features_lr(X, Y, model, args.model, args.corpus_name)
 
     model.train(X, Y)
     pkl.dump(

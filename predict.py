@@ -1,6 +1,6 @@
-import sys
-import argparse
 import pickle as pkl
+import argparse
+import sys
 
 
 def main():

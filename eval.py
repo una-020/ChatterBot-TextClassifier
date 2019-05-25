@@ -12,8 +12,10 @@ def kfold(sentences, labels, model_type, C=1):
     kf = StratifiedKFold(n_splits=5, shuffle=True)
 
     for train_index, test_index in kf.split(sentences, labels):
-        train_sent, test_sent = indexer(sentences, train_index), indexer(sentences, test_index)
-        train_label, test_label = indexer(labels, train_index), indexer(labels, test_index)
+        train_sent = indexer(sentences, train_index)
+        test_sent = indexer(sentences, test_index)
+        train_label = indexer(labels, train_index)
+        test_label = indexer(labels, test_index)
 
         if model_type == "lr":
             model = Logistic(C)
@@ -42,8 +44,6 @@ def main():
                         required=False, type=float, default=1)
     parser.add_argument('-cname', '--corpus_name',
                         help='Corpus name', required=True, type=str)
-    parser.add_argument('-ccat', '--corpus_category', help='Corpus category',
-                        required=False, type=str, default="gender")
     args = parser.parse_args()
     sentences = get_corpus(args.corpus_name)
     labels = get_label(args.corpus_name)

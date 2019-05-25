@@ -5,7 +5,6 @@ from sklearn.metrics import accuracy_score
 from nltk.tokenize import word_tokenize
 from sklearn import preprocessing
 from utils import *
-import torch.nn as nn
 
 
 class Model:
@@ -46,7 +45,7 @@ class Logistic(Model):
             max_iter=10000,
             n_jobs=-1,
             class_weight='balanced',
-            multi_class="auto"
+            multi_class='auto'
         )
 
     def train(self, X, Y, **kwargs):

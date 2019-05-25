@@ -1,5 +1,5 @@
-from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from nltk.tokenize import word_tokenize
 import sys
 import pickle as pkl
 
