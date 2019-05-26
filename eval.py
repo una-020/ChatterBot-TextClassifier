@@ -28,8 +28,8 @@ def kfold(sentences, labels, model_type, C=1):
         testY = model.get_Y(test_label, fit=False)
         predictY = model.predict(testX)
 
-        print("Evaluating Split", avg_cnt + 1)
         _, _, _, acc = model.eval(testY, predictY)
+        print("Evaluated Split " + str(avg_cnt + 1) + " Accuracy: " + str(acc))
         avg_acc += acc
         avg_cnt += 1
 

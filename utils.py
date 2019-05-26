@@ -29,7 +29,7 @@ def get_corpus(corpus_name):
 
     elif corpus_name == "news":
         from parsers.newsParser import parseData
-        sentences = parseData("data/news/combined_news.csv")
+        sentences = parseData("data/news/uci.csv", "data/news/turks.json")
 
     elif corpus_name == "sarcasm":
         from parsers.sarcasmParser import parseData
@@ -62,7 +62,7 @@ def get_label(corpus_name):
 
     elif corpus_name == "news":
         from parsers.newsParser import parseLabel
-        labels = parseLabel("data/news/combined_news.csv")
+        labels = parseLabel("data/news/uci.csv", "data/news/turks.json")
 
     elif corpus_name == "sarcasm":
         from parsers.sarcasmParser import parseLabel
@@ -81,16 +81,16 @@ def get_label(corpus_name):
 
 def get_features_lr(model, model_name, corpus_name):
     X = pkl.load(
-        open(model_name + "_" + corpus_name + "_X.pkl", "rb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_X.pkl", "rb")
     )
     Y = pkl.load(
-        open(model_name + "_" + corpus_name + "_Y.pkl", "rb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_Y.pkl", "rb")
     )
     model.vect = pkl.load(
-        open(model_name + "_" + corpus_name + "_X_vect.pkl", "rb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_X_vect.pkl", "rb")
     )
     model.labeler = pkl.load(
-        open(model_name + "_" + corpus_name + "_Y_le.pkl", "rb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_Y_le.pkl", "rb")
     )
     return X, Y
 
@@ -98,19 +98,19 @@ def get_features_lr(model, model_name, corpus_name):
 def save_features_lr(X, Y, model, model_name, corpus_name):
     pkl.dump(
         X,
-        open(model_name + "_" + corpus_name + "_X.pkl", "wb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_X.pkl", "wb")
     )
     pkl.dump(
         Y,
-        open(model_name + "_" + corpus_name + "_Y.pkl", "wb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_Y.pkl", "wb")
     )
     pkl.dump(
         model.vect,
-        open(model_name + "_" + corpus_name + "_X_vect.pkl", "wb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_X_vect.pkl", "wb")
     )
     pkl.dump(
         model.labeler,
-        open(model_name + "_" + corpus_name + "_Y_le.pkl", "wb")
+        open('pkl_files/' + model_name + "_" + corpus_name + "_Y_le.pkl", "wb")
     )
 
 

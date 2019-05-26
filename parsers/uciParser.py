@@ -17,6 +17,10 @@ def parseLabel(corpus_path):
     df = pd.read_csv(corpus_path)
     labels = []
     for i in range(len(df)):
+        if len(df["TITLE"][i].split()) > 20:
+            continue
+        if "http" in df["TITLE"][i]:
+            continue
         labels.append(df["CATEGORY"][i])
     return labels
 

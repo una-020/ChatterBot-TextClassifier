@@ -41,7 +41,7 @@ def main():
     model.train(X, Y)
     pkl.dump(
         model,
-        open(args.model + "_" + args.corpus_name + "_mod.pkl", "wb")
+        open('pkl_files/' + args.model + "_" + args.corpus_name + "_mod.pkl", "wb")
     )
 
 
