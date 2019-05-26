@@ -3,9 +3,10 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nltk.tokenize import word_tokenize
-from gensim.models import KeyedVectors
 from sklearn import preprocessing
 from utils import *
+
+import torch
 import numpy as np
 import torch.nn as nn
 
@@ -17,7 +18,7 @@ class Model:
     def predict(self, X, **kwargs):
         pass
 
-    def get_X(self, sentence_list, fit=True):
+    def get_X(self, sentence_list, **kwargs):
         pass
 
     def get_Y(self, label_list, fit=True):
@@ -57,7 +58,8 @@ class Logistic(Model):
     def predict(self, X, **kwargs):
         return self.cls.predict(X)
 
-    def get_X(self, sentence_list, fit=True):
+    def get_X(self, sentence_list, **kwargs):
+        fit = kwargs.get("fit", True)
         sentence_list = preprocess_periods(sentence_list)
         if fit:
             self.vect = TfidfVectorizer(
@@ -105,5 +107,43 @@ class Lstm(Model, nn.Module):
     def predict():
         pass
 
-    def get_X(self, sentence_list):
-        pass
+    def get_X(self, sentence_list, **kwargs):
+        wv_model = kwargs.get("wv_model")
+        sentence_list = preprocess_periods(sentence_list)
+        max_len = get_max_len(sentence_list)
+
+        X = []
+
+        for i in range(len(sentence_list)):
+            sentence = sentence_list[i]
+            sent_embed = np.array([]).reshape(self.embed_dim, 0)
+
+            for word in sentence.split():
+                try:
+                    word_embed = wv_model.word_vec(word)
+                except KeyError:
+                    word_embed = self.process_unk(wv_model, word)
+
+                word_embed = word_embed.reshape(-1, 1)
+                sent_embed = np.hstack((sent_embed, word_embed))
+
+            sent_embed = np.pad(sent_embed,
+                                ((0, 0), (0, max_len - sent_embed.shape[-1])),
+                                'constant')
+
+            X.append(sent_embed)
+        X = np.array(X)
+
+        return torch.from_numpy(X)  # corpus_size x embed_size x max_sen_len
+
+    def process_unk(self, wv_model, word):
+        word_embed = np.zeros((self.embed_dim))
+        for i in range(len(word)):
+            try:
+                word_embed += ((i + 1) * wv_model.word_vec(word[i]))
+            except KeyError:
+                continue
+
+        n = len(word)
+        word_embed /= (n * (n + 1)) / 2
+        return word_embed

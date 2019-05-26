@@ -1,3 +1,5 @@
+# from torch.utils.data import Dataset, DataLoader
+import re
 import pickle as pkl
 
 
@@ -8,6 +10,11 @@ def preprocess_periods(sentences):
         new_sentence = new_sentence.lower()
         new_sentences.append(new_sentence)
     return new_sentences
+
+
+def preprocess_sentence(sentences):
+    sentences = preprocess_periods(sentences)
+    return [re.sub('[^A-Za-z0-9]+', ' ', sent.lower()) for sent in sentences]
 
 
 def get_corpus(corpus_name):
@@ -108,8 +115,16 @@ def save_features_lr(X, Y, model, model_name, corpus_name):
 
 
 def get_max_len(sentence_list):
-    max_len = 0
-    for sentence in sentence_list:
-        if len(sentence) > max_len:
-            max_len = len(sentence)
-    return max_len
+    return max([len(sentence.split()) for sentence in sentence_list])
+
+
+# def dataloader(X, Y, **kwargs):
+
+#     params = {'batch_size': kwargs.pop('batch_size', 128),
+#               'shuffle': kwargs.pop('shuffle', True),
+#               'num_workers': kwargs.pop('num_workers', 16)}
+
+#     training_set = Dataset(X, Y)
+#     training_generator = DataLoader(training_set, **params)
+
+#     return training_generator

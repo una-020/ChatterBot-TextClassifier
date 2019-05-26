@@ -1,3 +1,4 @@
+from gensim.models import KeyedVectors
 from model import *
 from utils import *
 import argparse
@@ -19,7 +20,12 @@ def main():
 
     if args.model == "lr":
         model = Logistic(args.C)
+        wv_model = None
 
+    else:
+        filename = 'embed.bin'
+        wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
+        # TODO add NN model instantiation
     try:
         if args.model == "lr":
             X, Y = get_features_lr(
@@ -28,7 +34,7 @@ def main():
 
     except FileNotFoundError:
         if args.model == "lr":
-            X = model.get_X(sentences, fit=True)
+            X = model.get_X(sentences, fit=True, wv_model=wv_model)
             Y = model.get_Y(labels, fit=True)
             save_features_lr(X, Y, model, args.model, args.corpus_name)
 
