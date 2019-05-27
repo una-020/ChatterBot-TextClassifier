@@ -1,4 +1,5 @@
-# from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
+from dataloader import *
 import re
 import pickle as pkl
 
@@ -118,13 +119,12 @@ def get_max_len(sentence_list):
     return max([len(sentence.split()) for sentence in sentence_list])
 
 
-# def dataloader(X, Y, **kwargs):
+def get_dataloader(X, Y, **kwargs):
+    params = {'batch_size': kwargs.get('batch_size', 128),
+              'shuffle': kwargs.get('shuffle', True),
+              'num_workers': kwargs.get('num_workers', 16)}
 
-#     params = {'batch_size': kwargs.pop('batch_size', 128),
-#               'shuffle': kwargs.pop('shuffle', True),
-#               'num_workers': kwargs.pop('num_workers', 16)}
+    textdataset = TextDataset(X, Y)
+    text_generator = DataLoader(textdataset, **params)
 
-#     training_set = Dataset(X, Y)
-#     training_generator = DataLoader(training_set, **params)
-
-#     return training_generator
+    return text_generator

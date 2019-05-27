@@ -101,10 +101,19 @@ class Lstm(Model, nn.Module):
         o = self.decoder(o)
         return o
 
-    def train():
-        pass
+    def train(self, X, Y, **kwargs):
+        batch_size = kwargs.get("batch_size", 128)
+        num_workers = kwargs.get("num_workers", 4)
 
-    def predict():
+        text_loader = get_dataloader(X, Y, batch_size=batch_size,
+                                     num_workers=num_workers)
+
+        for i, (x_batch, y_batch) in enumerate(text_loader):
+            # use x_batch and y_batch to train the network
+            # x_batch : batch_size x em_size x max_sen_len, y_batch: batch_size
+            pass
+
+    def predict(self, X, **kwargs):
         pass
 
     def get_X(self, sentence_list, **kwargs):
