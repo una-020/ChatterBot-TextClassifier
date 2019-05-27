@@ -1,5 +1,6 @@
 from torch.utils.data import DataLoader
 from dataloader import *
+import os
 import re
 import pickle as pkl
 
@@ -97,6 +98,9 @@ def get_features_lr(model, model_name, corpus_name):
 
 
 def save_features_lr(X, Y, model, model_name, corpus_name):
+    if not os.path.exists("pkl_files/"):
+        os.mkdir("pkl_files") 
+
     pkl.dump(
         X,
         open('pkl_files/' + model_name + "_" + corpus_name + "_X.pkl", "wb")
