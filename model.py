@@ -11,6 +11,7 @@ from utils import *
 import torch
 import numpy as np
 import torch.nn as nn
+import torch.optim as optim
 
 
 class Model:
@@ -129,10 +130,35 @@ class Lstm(Model, nn.Module):
                                      num_workers=kwargs.get("num_workers", 4)
                                     )
         
-        for i, (x_batch, y_batch) in enumerate(text_loader):
-            print(x_batch.shape, y_batch.shape, i)
+        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        loss_function = nn.CrossEntropyLoss()
+#         loss = Variable(requires_grad=True)
+        
+        for epoch in range(1, kwargs.get("num_epochs", 100) + 1):
+            print("Epoch " + str(epoch))
+            correct_train = 0      
+            self.train()
+            for i, (data, label) in enumerate(text_loader):
+                data = data.cuda()
+                label = label.cuda()
+                data.requires_grad = False
+                label.requires_grad = False
+                
+                optimizer.zero_grad()
+                output = self.forward(data)
+                loss = loss_function(output, label)
+                loss.backward()
+                optimizer.step()
+                print("Batch %d: %f" % (i, loss.item()))
+                _, idx = torch.max(output, dim=1)
+                correct_train += (idx == label).sum().item()
+                
+            print("Training Accuracy:", correct_train / len(text_loader))
+
+            
 
     def predict(self, X, **kwargs):
+        p = self.forward(X)
         pass
 
     def get_X(self, sentence_list, **kwargs):

@@ -77,7 +77,7 @@ def get_max_len(sentence_list):
 
 def get_dataloader(dataset, **kwargs):
     params = {'batch_size': kwargs.get('batch_size', 128),
-              'shuffle': kwargs.get('shuffle', True),
+              'shuffle': kwargs.get('shuffle', False),
               'num_workers': kwargs.get('num_workers', 4)}
     text_generator = DataLoader(dataset, **params)
     return text_generator

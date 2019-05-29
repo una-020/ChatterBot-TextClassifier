@@ -34,7 +34,8 @@ def main():
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
         model = Lstm(embed_dim=args.embed_dim, num_classes=len(set(labels)), wv_model=wv_model)
-
+        model = model.cuda()
+        
     try:
         X, Y = model.load_corpus(args.corpus_name)
 
@@ -44,10 +45,7 @@ def main():
         model.save_corpus(args.corpus_name, X, Y)
 
     model.train_model(X, Y, batch_size=args.batch_size, num_workers=args.num_workers)
-#     pkl.dump(
-#         model,
-#         open('pkl_files/' + args.model + "_" + args.corpus_name + "_mod.pkl", "wb")
-#     )
+#     print(model.eval_model(Y, model.predict(X)))
 
 
 if __name__ == "__main__":
