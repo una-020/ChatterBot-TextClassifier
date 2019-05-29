@@ -14,7 +14,7 @@ def preprocess_periods(sentences):
     return new_sentences
 
 
-def preprocess_sentence(sentences):
+def preprocess_sentences(sentences):
     sentences = preprocess_periods(sentences)
     return [re.sub('[^A-Za-z0-9]+', ' ', sent.lower()) for sent in sentences]
 

@@ -3,6 +3,7 @@ from sklearn.metrics import precision_recall_fscore_support
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from nltk.tokenize import word_tokenize
+from torch.utils.data import Dataset
 from sklearn import preprocessing
 from utils import *
 
@@ -38,6 +39,12 @@ class Model:
         )
         accuracy = accuracy_score(y_true, y_pred)
         return precision, recall, fscore, accuracy
+    
+    def save_corpus(self, corpus_name, X, Y):
+        pass
+    
+    def load_corpus(self, corpus_name):
+        pass
 
 
 class Logistic(Model):
@@ -69,6 +76,17 @@ class Logistic(Model):
         else:
             X = self.vect.transform(sentence_list)
         return X
+
+    def save_corpus(self, corpus_name, X, Y):
+        if not os.path.exists("pkl_files/"):
+            os.mkdir("pkl_files")
+        n_file = "pkl_files/lr_" + corpus_name + ".pkl"
+        pkl.dump([X, Y, self.vect, self.labeler], open(n_file, "wb"))
+
+    def load_corpus(self, corpus_name):
+        bundle = pkl.load(open("pkl_files/lr_" + corpus_name + ".pkl", "rb"))
+        X, Y, self.vect, self.labeler = bundle
+        return X, Y
 
 
 class Lstm(Model, nn.Module):
@@ -102,6 +120,20 @@ class Lstm(Model, nn.Module):
         return o
 
     def train(self, X, Y, **kwargs):
+        class WVECDataset(Dataset):
+            def __init__(self, X, Y):
+                self.X = X
+                self.Y = Y
+                self.max_len = get_max_len(X)
+
+            def __getitem__(self, index_wvec):
+                feature = self.X[index]
+                return (self.X[index, :], self.Y[index])
+
+    def __len__(self):
+        return self.X.shape[0]
+
+            
         batch_size = kwargs.get("batch_size", 128)
         num_workers = kwargs.get("num_workers", 4)
 
@@ -118,11 +150,10 @@ class Lstm(Model, nn.Module):
 
     def get_X(self, sentence_list, **kwargs):
         wv_model = kwargs.get("wv_model")
-        sentence_list = preprocess_periods(sentence_list)
-        max_len = get_max_len(sentence_list)
+        sentence_list = preprocess_sentences(sentence_list)
+        max_len = kwargs.get("max_len")
 
         X = []
-
         for i in range(len(sentence_list)):
             sentence = sentence_list[i]
             sent_embed = np.array([]).reshape(self.embed_dim, 0)
@@ -142,8 +173,8 @@ class Lstm(Model, nn.Module):
 
             X.append(sent_embed)
         X = np.array(X)
-
-        return torch.from_numpy(X)  # corpus_size x embed_size x max_sen_len
+        X = X.permute(0, 2, 1)
+        return torch.from_numpy(X)
 
     def process_unk(self, wv_model, word):
         word_embed = np.zeros((self.embed_dim))
