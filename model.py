@@ -95,7 +95,7 @@ class Lstm(Model, nn.Module):
         super(Lstm, self).__init__()
 
         self.embed_dim = kwargs.get("embed_dim")
-        self.hidden_dim = kwargs.get("hidden_dim", 600)
+        self.hidden_dim = kwargs.get("hidden_dim", 100)
         self.num_classes = kwargs.get("num_classes")
         self.wv_model = kwargs.get("wv_model")
         dropout = kwargs.get("dropout", 0.5)
@@ -127,33 +127,32 @@ class Lstm(Model, nn.Module):
         dataset = TextDataset(X, Y, self.wv_model)
         text_loader = get_dataloader(dataset,
                                      batch_size=kwargs.get("batch_size", 128),
-                                     num_workers=kwargs.get("num_workers", 4)
+                                     num_workers=kwargs.get("num_workers", 4),
+                                     shuffle=True
                                     )
         
-        optimizer = optim.Adam(self.parameters(), lr=0.001)
+        optimizer = optim.Adam(self.parameters(), lr=0.1)
         loss_function = nn.CrossEntropyLoss()
-#         loss = Variable(requires_grad=True)
         
         for epoch in range(1, kwargs.get("num_epochs", 100) + 1):
             print("Epoch " + str(epoch))
             correct_train = 0      
             self.train()
             for i, (data, label) in enumerate(text_loader):
+                data = data.type(torch.FloatTensor)
                 data = data.cuda()
                 label = label.cuda()
-                data.requires_grad = False
-                label.requires_grad = False
                 
                 optimizer.zero_grad()
                 output = self.forward(data)
                 loss = loss_function(output, label)
                 loss.backward()
                 optimizer.step()
-                print("Batch %d: %f" % (i, loss.item()))
                 _, idx = torch.max(output, dim=1)
                 correct_train += (idx == label).sum().item()
+                print("\rBatch %d: %f %d" % (i, loss.item(), correct_train), end="")
                 
-            print("Training Accuracy:", correct_train / len(text_loader))
+            print("\nTraining Accuracy:", correct_train / len(text_loader))
 
             
 
