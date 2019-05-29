@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 from nltk.tokenize import word_tokenize
 from torch.utils.data import Dataset
 from sklearn import preprocessing
+from dataloader import *
 from utils import *
 
 import torch
@@ -13,7 +14,7 @@ import torch.nn as nn
 
 
 class Model:
-    def train(self, X, Y, **kwargs):
+    def train_model(self, X, Y, **kwargs):
         pass
 
     def predict(self, X, **kwargs):
@@ -30,7 +31,7 @@ class Model:
             Y = self.labeler.transform(label_list)
         return Y
 
-    def eval(self, y_true, y_pred, average=None):
+    def eval_model(self, y_true, y_pred, average=None):
         assert len(y_true) == len(y_pred)
         precision, recall, fscore, support = precision_recall_fscore_support(
             y_true,
@@ -59,7 +60,7 @@ class Logistic(Model):
             multi_class='auto'
         )
 
-    def train(self, X, Y, **kwargs):
+    def train_model(self, X, Y, **kwargs):
         self.cls.fit(X, Y)
 
     def predict(self, X, **kwargs):
@@ -67,7 +68,6 @@ class Logistic(Model):
 
     def get_X(self, sentence_list, **kwargs):
         fit = kwargs.get("fit", True)
-        sentence_list = preprocess_periods(sentence_list)
         if fit:
             self.vect = TfidfVectorizer(
                 tokenizer=word_tokenize,
@@ -96,8 +96,11 @@ class Lstm(Model, nn.Module):
         self.embed_dim = kwargs.get("embed_dim")
         self.hidden_dim = kwargs.get("hidden_dim", 600)
         self.num_classes = kwargs.get("num_classes")
+        self.wv_model = kwargs.get("wv_model")
         dropout = kwargs.get("dropout", 0.5)
         num_layers = kwargs.get("num_layers", 1)
+        if num_layers == 1:
+            dropout = 0
 
         self.lstm = nn.LSTM(
             input_size=self.embed_dim,
@@ -119,71 +122,29 @@ class Lstm(Model, nn.Module):
         o = self.decoder(o)
         return o
 
-    def train(self, X, Y, **kwargs):
-        class WVECDataset(Dataset):
-            def __init__(self, X, Y):
-                self.X = X
-                self.Y = Y
-                self.max_len = get_max_len(X)
-
-            def __getitem__(self, index_wvec):
-                feature = self.X[index]
-                return (self.X[index, :], self.Y[index])
-
-    def __len__(self):
-        return self.X.shape[0]
-
-            
-        batch_size = kwargs.get("batch_size", 128)
-        num_workers = kwargs.get("num_workers", 4)
-
-        text_loader = get_dataloader(X, Y, batch_size=batch_size,
-                                     num_workers=num_workers)
-
+    def train_model(self, X, Y, **kwargs):
+        dataset = TextDataset(X, Y, self.wv_model)
+        text_loader = get_dataloader(dataset,
+                                     batch_size=kwargs.get("batch_size", 128),
+                                     num_workers=kwargs.get("num_workers", 4)
+                                    )
+        
         for i, (x_batch, y_batch) in enumerate(text_loader):
-            # use x_batch and y_batch to train the network
-            # x_batch : batch_size x em_size x max_sen_len, y_batch: batch_size
-            pass
+            print(x_batch.shape, y_batch.shape, i)
 
     def predict(self, X, **kwargs):
         pass
 
     def get_X(self, sentence_list, **kwargs):
-        wv_model = kwargs.get("wv_model")
-        sentence_list = preprocess_sentences(sentence_list)
-        max_len = kwargs.get("max_len")
+        return sentence_list
+    
+    def save_corpus(self, corpus_name, X, Y):
+        if not os.path.exists("pkl_files/"):
+            os.mkdir("pkl_files")
+        n_file = "pkl_files/nn_" + corpus_name + ".pkl"
+        pkl.dump([X, Y, self.labeler], open(n_file, "wb"))
 
-        X = []
-        for i in range(len(sentence_list)):
-            sentence = sentence_list[i]
-            sent_embed = np.array([]).reshape(self.embed_dim, 0)
-
-            for word in sentence.split():
-                try:
-                    word_embed = wv_model.word_vec(word)
-                except KeyError:
-                    word_embed = self.process_unk(wv_model, word)
-
-                word_embed = word_embed.reshape(-1, 1)
-                sent_embed = np.hstack((sent_embed, word_embed))
-
-            sent_embed = np.pad(sent_embed,
-                                ((0, 0), (0, max_len - sent_embed.shape[-1])),
-                                'constant')
-
-            X.append(sent_embed)
-        X = np.array(X)
-        X = X.permute(0, 2, 1)
-        return torch.from_numpy(X)
-
-    def process_unk(self, wv_model, word):
-        word_embed = np.zeros((self.embed_dim))
-        for i in range(len(word)):
-            try:
-                word_embed += ((i + 1) * wv_model.word_vec(word[i]))
-            except KeyError:
-                continue
-
-        n = len(word)
-        word_embed /= (n * (n + 1)) / 2
-        return word_embed
+    def load_corpus(self, corpus_name):
+        bundle = pkl.load(open("pkl_files/nn_" + corpus_name + ".pkl", "rb"))
+        X, Y, self.labeler = bundle
+        return X, Y
