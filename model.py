@@ -124,25 +124,26 @@ class Lstm(Model, nn.Module):
         return o
 
     def train_model(self, X, Y, **kwargs):
+        is_cuda = next(self.parameters()).is_cuda
+        device = 'cuda' if is_cuda else 'cpu'
+
         dataset = TextDataset(X, Y, self.wv_model)
         text_loader = get_dataloader(dataset,
                                      batch_size=kwargs.get("batch_size", 128),
                                      num_workers=kwargs.get("num_workers", 4),
                                      shuffle=True
                                     )
-        
-        optimizer = optim.Adam(self.parameters(), lr=0.1)
+
+        optimizer = optim.Adam(self.parameters(), lr=0.001)
         loss_function = nn.CrossEntropyLoss()
-        
         for epoch in range(1, kwargs.get("num_epochs", 100) + 1):
             print("Epoch " + str(epoch))
             correct_train = 0      
             self.train()
             for i, (data, label) in enumerate(text_loader):
                 data = data.type(torch.FloatTensor)
-                data = data.cuda()
-                label = label.cuda()
-                
+                data = data.to(device)
+                label = label.to(device)
                 optimizer.zero_grad()
                 output = self.forward(data)
                 loss = loss_function(output, label)
@@ -150,11 +151,8 @@ class Lstm(Model, nn.Module):
                 optimizer.step()
                 _, idx = torch.max(output, dim=1)
                 correct_train += (idx == label).sum().item()
-                print("\rBatch %d: %f %d" % (i, loss.item(), correct_train), end="")
-                
-            print("\nTraining Accuracy:", correct_train / len(text_loader))
-
-            
+                print("\rBatch %d: %f" % (i, loss.item()), end="")
+            print("\nTraining Accuracy:", correct_train / len(dataset))
 
     def predict(self, X, **kwargs):
         p = self.forward(X)

@@ -26,6 +26,9 @@ def main():
     sentences = preprocess_sentences(sentences)
     labels = get_label(args.corpus_name)
 
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(device)
+    
     if args.model == "lr":
         model = Logistic(args.C)
         wv_model = None
@@ -34,7 +37,7 @@ def main():
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
         model = Lstm(embed_dim=args.embed_dim, num_classes=len(set(labels)), wv_model=wv_model)
-        model = model.cuda()
+        model = model.to(device)
         
     try:
         X, Y = model.load_corpus(args.corpus_name)
