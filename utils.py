@@ -1,7 +1,10 @@
 from torch.utils.data import DataLoader
+from gensim.models import KeyedVectors
 from dataloader import *
+from model import *
 import os
 import re
+import torch
 import pickle as pkl
 
 
@@ -34,7 +37,7 @@ def recover_model(model_name, corpus_name, wv_model=None):
     num_layers = params.get("num_layers", default["num_layers"])
     num_classes = params.get("num_classes", len(labeler.classes_))
     
-    if args.model == "lr":
+    if model_name == "lr":
         model = Logistic(C)
         model.labeler = labeler
         model.vect = bundle[-2]
@@ -125,9 +128,3 @@ def get_max_len(sentence_list):
     return max([len(sentence.split()) for sentence in sentence_list])
 
 
-def get_dataloader(dataset, **kwargs):
-    params = {'batch_size': kwargs.get('batch_size', 128),
-              'shuffle': kwargs.get('shuffle', False),
-              'num_workers': kwargs.get('num_workers', 4)}
-    text_generator = DataLoader(dataset, **params)
-    return text_generator

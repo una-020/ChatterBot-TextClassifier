@@ -6,7 +6,6 @@ from nltk.tokenize import word_tokenize
 from torch.utils.data import Dataset
 from sklearn import preprocessing
 from dataloader import *
-from utils import *
 
 import torch
 import numpy as np
@@ -140,6 +139,8 @@ class Lstm(Model, nn.Module):
             out_features=self.num_classes
         )
         
+        self.initialise_parameters()
+            
 
     def forward(self, X):
         o, _ = self.lstm(X)
@@ -147,6 +148,9 @@ class Lstm(Model, nn.Module):
         o = o.contiguous().view(-1, self.hidden_dim)
         o = self.decoder(o)
         return o
+    
+    def initialise_parameters(self):
+        nn.init.xavier_uniform_(self.decoder.weight)
 
     def train_model(self, X, Y, **kwargs):
         is_cuda = next(self.parameters()).is_cuda
@@ -181,8 +185,24 @@ class Lstm(Model, nn.Module):
             print("\nTraining Accuracy:", correct_train / len(dataset))
 
     def predict(self, X, **kwargs):
-        p = self.forward(X)
-        pass
+        device = 'cuda' if is_cuda else 'cpu'
+        label_dummy = [0] * len(X)
+        wv_model = kwargs.get("wv_model")
+        test_dataset = TextDataset(X, label_dummy, wv_model)
+        test_loader = get_dataloader(test_dataset,
+                                     batch_size=kwargs.get("batch_size", 128),
+                                     num_workers=kwargs.get("num_workers", 4),
+                                     shuffle=True
+                                    )
+        y_pred = []
+        for i, (data, label) in enumerate(test_loader):
+            data = data.type(torch.FloatTensor)
+            data = data.to(device)
+            output = self.forward(data)
+            _, idx = torch.max(output, dim=1)
+            y_pred.extend(idx.tolist())
+                
+        return y_pred
 
     def get_X(self, sentence_list, **kwargs):
         return sentence_list
@@ -217,3 +237,11 @@ class Lstm(Model, nn.Module):
     def load_model(self, corpus_name):
         n_file = "pkl_files/nn_" + corpus_name + "_model.pkl"
         self.load_state_dict(torch.load(n_file))
+
+        
+def get_dataloader(dataset, **kwargs):
+    params = {'batch_size': kwargs.get('batch_size', 128),
+              'shuffle': kwargs.get('shuffle', False),
+              'num_workers': kwargs.get('num_workers', 4)}
+    text_generator = DataLoader(dataset, **params)
+    return text_generator
