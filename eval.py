@@ -1,14 +1,14 @@
 from sklearn.model_selection import StratifiedKFold
 from gensim.models import KeyedVectors
 from model import *
-import utils
 import argparse
+
 
 def indexer(data, index_list):
     return [data[i] for i in index_list]
 
 
-def kfold(sentences, labels, model_type, C=1):
+def kfold(sentences, labels, model_type, args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
     if model_type == 'nn':
@@ -29,21 +29,21 @@ def kfold(sentences, labels, model_type, C=1):
         test_label = indexer(labels, test_index)
         
         if model_type == "lr":
-            model = Logistic(C)
+            model = Logistic(args.C)
         else:
             model = Lstm(
-                embed_dim=default['embed_dim'],
+                embed_dim=args.embed_dim,
                 num_classes=num_labels,
                 wv_model=wv_model,
-                hidden_dim=default['hidden_dim'],
-                dropout=default['dropout'],
-                num_layers=default['num_layers']
+                hidden_dim=args.hidden_dim,
+                dropout=args.dropout,
+                num_layers=args.num_layers
             )
             model.to(device)
     
         trainX = model.get_X(train_sent, fit=True)
         trainY = model.get_Y(train_label, fit=True)
-        model.train_model(trainX, trainY)
+        model.train_model(trainX, trainY, batch_size=args.batch_size, num_workers=args.num_workers, epoch=args.epoch)
         
         testX = model.get_X(test_sent, fit=False)
         testY = model.get_Y(test_label, fit=False)
@@ -60,16 +60,60 @@ def kfold(sentences, labels, model_type, C=1):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--model', help='(lr|nn)',
-                        required=True, type=str)
-    parser.add_argument('-C', '--C', help='Inverse lr reg. strength',
-                        required=False, type=float, default=1)
+    parser.add_argument('-m', '--model',
+                        help='(lr|nn)',
+                        type=str,
+                        required=True)
     parser.add_argument('-cname', '--corpus_name',
-                        help='Corpus name', required=True, type=str)
+                        help='Corpus name',
+                        type=str,
+                        required=True)
+    parser.add_argument('-C', '--C',
+                        help='Inverse lr reg. strength',
+                        type=float,
+                        default=1,
+                        required=False)
+    parser.add_argument('-edim', '--embed_dim',
+                        help='Word embedding dimension',
+                        type=int,
+                        default=300,
+                        required=False)
+    parser.add_argument('-hdim', '--hidden_dim',
+                        help='Hidden Dimension',
+                        type=int,
+                        default=200,
+                        required=False)
+    parser.add_argument('-drop', '--dropout',
+                        help='Dropout in NN',
+                        type=float,
+                        default=0.5,
+                        required=False)
+    parser.add_argument('-nlayers', '--num_layers',
+                        help='Number of layers in NN',
+                        type=int,
+                        default=2,
+                        required=False)
+    parser.add_argument('-e', '--epoch',
+                        help='Epoch',
+                        type=int,
+                        default=100,
+                        required=False)
+    parser.add_argument('-bsize', '--batch_size',
+                        help='Batch Size',
+                        type=int,
+                        default=128,
+                        required=False)
+    parser.add_argument('-nworkers', '--num_workers',
+                        help='Number of worker threads',
+                        type=int,
+                        default=4,
+                        required=False)
     args = parser.parse_args()
+    
+    
     sentences = get_corpus(args.corpus_name)
     labels = get_label(args.corpus_name)
-    kfold(sentences, labels, args.model, args.C)
+    kfold(sentences, labels, args.model, args)
 
 
 if __name__ == "__main__":
