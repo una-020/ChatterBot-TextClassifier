@@ -31,6 +31,11 @@ def main():
                         help='Input path',
                         type=str,
                         required=True)
+    parser.add_argument('-opath', '--output_path',
+                        help='Output path',
+                        type=str,
+                        default="predict.txt",
+                        required=False)
     args = parser.parse_args()
     
     sentences = open(args.input_path).readlines()
@@ -44,8 +49,10 @@ def main():
         print("WVEC loaded")
     
     predictions = predictor(sentences, args.model, args.corpus_name, wv_model)
+    f = open(args.output_path, "w")
     for res in predictions:
         f.write(res + "\n")
+    f.close()
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ import numpy as np
 import pickle as pkl
 import torch.nn as nn
 import torch.optim as optim
+import torch.nn.functional as F
 
 
 class Model:
@@ -140,6 +141,8 @@ class Lstm(Model, nn.Module):
             out_features=self.num_classes
         )
         
+        self.softmax = nn.Softmax()
+        
         self.initialise_parameters()
             
 
@@ -202,6 +205,27 @@ class Lstm(Model, nn.Module):
             y_pred.extend(idx.tolist())
             
         return y_pred
+    
+    def predict_proba(self, X, **kwargs):
+        self.eval()
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        label_dummy = [0] * len(X)
+        wv_model = kwargs.get("wv_model")
+        test_dataset = TextDataset(X, label_dummy, wv_model)
+        test_loader = get_dataloader(test_dataset,
+                                     batch_size=kwargs.get("batch_size", default["batch_size"]),
+                                     num_workers=kwargs.get("num_workers", default["num_workers"]),
+                                     shuffle=False
+                                    )
+        
+        probs = np.zeros([0, self.num_classes])
+        for i, (data, label) in enumerate(test_loader):
+            data = data.to(device)
+            output = self.forward(data)
+            prob = F.softmax(output, dim=1)
+            prob = prob.cpu().detach().numpy()
+            probs = np.vstack([probs, prob])
+        return probs
 
     def get_X(self, sentence_list, **kwargs):
         return sentence_list

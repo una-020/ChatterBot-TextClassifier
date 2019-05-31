@@ -1,31 +1,69 @@
-from sklearn.pipeline import make_pipeline
-from lime.lime_text import LimeTextExplainer
 from generateFeature import preprocess_periods
-import pickle as pkl
+from lime.lime_text import LimeTextExplainer
+from sklearn.pipeline import make_pipeline
+from gensim.models import KeyedVectors
+from model import recover_model
+from utils import *
+
 import sys
+import argparse
+import pickle as pkl
 
 
-def explain(text, model, vect, labeler):
-    c = make_pipeline(vect, model)
-    explainer = LimeTextExplainer(class_names=labeler.classes_)
+def explainer(text, model_name, corpus_name, wv_model=None, **kwargs):
+#     text is a single sentence
+    model, _, _ = recover_model(model_name, corpus_name, wv_model)
+    
+    def predict_proba(sentences):
+        testX = model.get_X(sentences, fit=False)
+        if model_name == "lr":
+            return model.cls.predict_proba(testX)
+        else:
+            return model.predict_proba(testX, wv_model=wv_model)
+
+    explainer = LimeTextExplainer(class_names=model.labeler.classes_)
     exp = explainer.explain_instance(
         text,
-        c.predict_proba,
-        num_features=6,
-        top_labels=2
+        predict_proba,
+        num_features=kwargs.get("num_features", 6),
+        top_labels=kwargs.get("top_labels", 2)
     )
     return exp.as_html(text=text)
 
 
 def main():
-    text = input().strip()
-    text = preprocess_sentences([text])[0]
-    vect = pkl.load(open("Xvect.pkl", "rb"))
-    labeler = pkl.load(open("Ylabeler.pkl", "rb"))
-    cls = pkl.load(open("model.pkl", "rb"))
-
-    f = sys.stdout
-    f.write(explain(text, cls, vect, labeler))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--model',
+                        help='(lr|nn)',
+                        type=str,
+                        required=True)
+    parser.add_argument('-cname', '--corpus_name',
+                        help='Corpus name',
+                        type=str,
+                        required=True)
+    parser.add_argument('-ipath', '--input_path',
+                        help='Input path',
+                        type=str,
+                        required=True)
+    parser.add_argument('-opath', '--output_path',
+                        help='Output path',
+                        type=str,
+                        default="explain.html",
+                        required=False)
+    args = parser.parse_args()
+    
+    sentence = open(args.input_path).read().strip()
+    sentence = preprocess_sentences([sentence])[0]
+    wv_model = None
+    
+    if args.model == 'nn':
+        filename = 'GoogleNews-vectors-negative300.bin'
+        wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
+        print("WVEC loaded")
+    
+    f = open(args.output_path, "w")
+    f.write(explainer(sentence, args.model, args.corpus_name, wv_model))
+    f.close()
 
 
 if __name__ == "__main__":

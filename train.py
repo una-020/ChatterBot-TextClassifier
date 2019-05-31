@@ -98,7 +98,7 @@ def main():
         
         try:
             X, Y = model.load_corpus(args.corpus_name)
-        except FileNotFoundError:
+        except:
             X = model.get_X(sentences, fit=True)
             Y = model.get_Y(labels, fit=True)
             model.save_corpus(args.corpus_name, X, Y)
