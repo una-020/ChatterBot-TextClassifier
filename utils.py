@@ -1,10 +1,7 @@
 from torch.utils.data import DataLoader
-from gensim.models import KeyedVectors
 from dataloader import *
-from model import *
 import os
 import re
-import torch
 import pickle as pkl
 
 
@@ -18,44 +15,6 @@ default = {
     "batch_size": 128,
     "num_workers": 4
 }
-
-
-def recover_model(model_name, corpus_name, wv_model=None):
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    b_name = "pkl_files/" + model_name + "_" + corpus_name + ".pkl"
-    bundle = pkl.load(open(b_name, "rb"))
-    labeler = bundle[-1]
-    X = bundle[0]
-    Y = bundle[1]
-    
-    p_file = "pkl_files/" + model_name + "_" + corpus_name + "_params.pkl"
-    params = pkl.load(open(p_file, "rb"))
-    C = params.get("C", default["C"])
-    embed_dim = params.get("embed_dim", default["embed_dim"])
-    hidden_dim = params.get("hidden_dim", default["hidden_dim"])
-    dropout = params.get("dropout", default["dropout"])
-    num_layers = params.get("num_layers", default["num_layers"])
-    num_classes = params.get("num_classes", len(labeler.classes_))
-    
-    if model_name == "lr":
-        model = Logistic(C)
-        model.labeler = labeler
-        model.vect = bundle[-2]
-        model.load_model(corpus_name)
-    else:
-        assert wv_model is not None
-        model = Lstm(
-            embed_dim=embed_dim,
-            num_classes=num_classes,
-            wv_model=wv_model,
-            hidden_dim=hidden_dim,
-            dropout=dropout,
-            num_layers=num_layers
-        )
-        model.labeler = labeler
-        model.load_model(corpus_name)
-        model = model.to(device)
-    return model, X, Y
 
 
 def preprocess_sentences(sentences):
@@ -128,3 +87,9 @@ def get_max_len(sentence_list):
     return max([len(sentence.split()) for sentence in sentence_list])
 
 
+def get_dataloader(dataset, **kwargs):
+    params = {'batch_size': kwargs.get('batch_size', default["batch_size"]),
+              'shuffle': kwargs.get('shuffle', False),
+              'num_workers': kwargs.get('num_workers', default["num_workers"])}
+    text_generator = DataLoader(dataset, **params)
+    return text_generator

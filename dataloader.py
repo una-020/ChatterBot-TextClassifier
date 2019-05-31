@@ -34,6 +34,7 @@ class TextDataset(Dataset):
             sent_embed.append(np.zeros(self.embed_dim))
         sent_embed = np.array(sent_embed)
         sent_embed = torch.from_numpy(sent_embed)
+        sent_embed = sent_embed.type(torch.FloatTensor)
         
         return (sent_embed, self.Y[index])
 

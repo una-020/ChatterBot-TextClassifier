@@ -1,5 +1,7 @@
+from gensim.models import KeyedVectors
+from model import recover_model
 from utils import *
-from dataloader import *
+
 import sys
 import argparse
 import pickle as pkl
@@ -9,12 +11,10 @@ def predictor(text, model_name, corpus_name, wv_model=None):
     model, _, _ = recover_model(model_name, corpus_name, wv_model)
     
     testX = model.get_X(text, fit=False)
-    y_pred = model.predict(testX, wv_model)
+    y_pred = model.predict(testX, wv_model=wv_model)
     results = model.labeler.inverse_transform(y_pred)
     
-    f = sys.stdout
-    for res in results:
-        f.write(res + "\n")        
+    return results
 
         
 def main():
@@ -27,19 +27,26 @@ def main():
                         help='Corpus name',
                         type=str,
                         required=True)
-   
+    parser.add_argument('-ipath', '--input_path',
+                        help='Input path',
+                        type=str,
+                        required=True)
     args = parser.parse_args()
     
-    text = input().strip()
-    text = preprocess_sentences([text])[0]
+    sentences = open(args.input_path).readlines()
+    sentences = [line.strip() for line in sentences if line.strip()]
+    sentences = preprocess_sentences(sentences)
     wv_model = None
     
     if args.model == 'nn':
         filename = 'GoogleNews-vectors-negative300.bin'
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
-        
-    predictor(text, args.model, args.corpus_name, wv_model)
+    
+    predictions = predictor(sentences, args.model, args.corpus_name, wv_model)
+    for res in predictions:
+        f.write(res + "\n")
+
 
 if __name__ == "__main__":
     main()

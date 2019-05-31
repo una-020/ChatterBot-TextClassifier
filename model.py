@@ -6,6 +6,7 @@ from nltk.tokenize import word_tokenize
 from torch.utils.data import Dataset
 from sklearn import preprocessing
 from dataloader import *
+from utils import *
 
 import torch
 import numpy as np
@@ -153,8 +154,8 @@ class Lstm(Model, nn.Module):
         nn.init.xavier_uniform_(self.decoder.weight)
 
     def train_model(self, X, Y, **kwargs):
-        is_cuda = next(self.parameters()).is_cuda
-        device = 'cuda' if is_cuda else 'cpu'
+        self.train()
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         dataset = TextDataset(X, Y, self.wv_model)
         text_loader = get_dataloader(
@@ -169,9 +170,7 @@ class Lstm(Model, nn.Module):
         for epoch in range(1, kwargs.get("epoch", 100) + 1):
             print("Epoch " + str(epoch))
             correct_train = 0      
-            self.train()
             for i, (data, label) in enumerate(text_loader):
-                data = data.type(torch.FloatTensor)
                 data = data.to(device)
                 label = label.to(device)
                 optimizer.zero_grad()
@@ -185,23 +184,23 @@ class Lstm(Model, nn.Module):
             print("\nTraining Accuracy:", correct_train / len(dataset))
 
     def predict(self, X, **kwargs):
-        device = 'cuda' if is_cuda else 'cpu'
+        self.eval()
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
         label_dummy = [0] * len(X)
         wv_model = kwargs.get("wv_model")
         test_dataset = TextDataset(X, label_dummy, wv_model)
         test_loader = get_dataloader(test_dataset,
-                                     batch_size=kwargs.get("batch_size", 128),
-                                     num_workers=kwargs.get("num_workers", 4),
-                                     shuffle=True
+                                     batch_size=kwargs.get("batch_size", default["batch_size"]),
+                                     num_workers=kwargs.get("num_workers", default["num_workers"]),
+                                     shuffle=False
                                     )
         y_pred = []
         for i, (data, label) in enumerate(test_loader):
-            data = data.type(torch.FloatTensor)
             data = data.to(device)
             output = self.forward(data)
             _, idx = torch.max(output, dim=1)
             y_pred.extend(idx.tolist())
-                
+            
         return y_pred
 
     def get_X(self, sentence_list, **kwargs):
@@ -238,10 +237,40 @@ class Lstm(Model, nn.Module):
         n_file = "pkl_files/nn_" + corpus_name + "_model.pkl"
         self.load_state_dict(torch.load(n_file))
 
-        
-def get_dataloader(dataset, **kwargs):
-    params = {'batch_size': kwargs.get('batch_size', 128),
-              'shuffle': kwargs.get('shuffle', False),
-              'num_workers': kwargs.get('num_workers', 4)}
-    text_generator = DataLoader(dataset, **params)
-    return text_generator
+
+def recover_model(model_name, corpus_name, wv_model=None):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    b_name = "pkl_files/" + model_name + "_" + corpus_name + ".pkl"
+    bundle = pkl.load(open(b_name, "rb"))
+    labeler = bundle[-1]
+    X = bundle[0]
+    Y = bundle[1]
+    
+    p_file = "pkl_files/" + model_name + "_" + corpus_name + "_params.pkl"
+    params = pkl.load(open(p_file, "rb"))
+    C = params.get("C", default["C"])
+    embed_dim = params.get("embed_dim", default["embed_dim"])
+    hidden_dim = params.get("hidden_dim", default["hidden_dim"])
+    dropout = params.get("dropout", default["dropout"])
+    num_layers = params.get("num_layers", default["num_layers"])
+    num_classes = params.get("num_classes", len(labeler.classes_))
+    
+    if model_name == "lr":
+        model = Logistic(C)
+        model.labeler = labeler
+        model.vect = bundle[-2]
+        model.load_model(corpus_name)
+    else:
+        assert wv_model is not None
+        model = Lstm(
+            embed_dim=embed_dim,
+            num_classes=num_classes,
+            wv_model=wv_model,
+            hidden_dim=hidden_dim,
+            dropout=dropout,
+            num_layers=num_layers
+        )
+        model.labeler = labeler
+        model.load_model(corpus_name)
+        model = model.to(device)
+    return model, X, Y
