@@ -10,6 +10,7 @@ from utils import *
 
 import torch
 import numpy as np
+import pickle as pkl
 import torch.nn as nn
 import torch.optim as optim
 
@@ -47,10 +48,17 @@ class Model:
     
     def load_corpus(self, corpus_name):
         pass
+    
+    def save_model(self, corpus_name):
+        pass
+    
+    def load_model(self, corpus_name):
+        pass
 
 
 class Logistic(Model):
     def __init__(self, C):
+        self.C = C
         self.cls = LogisticRegression(
             random_state=0,
             C=C,
@@ -85,9 +93,23 @@ class Logistic(Model):
         pkl.dump([X, Y, self.vect, self.labeler], open(n_file, "wb"))
 
     def load_corpus(self, corpus_name):
-        bundle = pkl.load(open("pkl_files/lr_" + corpus_name + ".pkl", "rb"))
+        n_file = "pkl_files/lr_" + corpus_name + ".pkl"
+        bundle = pkl.load(open(n_file, "rb"))
         X, Y, self.vect, self.labeler = bundle
         return X, Y
+    
+    def save_model(self, corpus_name):
+        if not os.path.exists("pkl_files/"):
+            os.mkdir("pkl_files")
+        n_file = "pkl_files/lr_" + corpus_name + "_model.pkl"
+        pkl.dump(self.cls, open(n_file, "wb"))
+        params = {"C": self.C}
+        p_file = "pkl_files/lr_" + corpus_name + "_params.pkl"
+        pkl.dump(params, open(p_file, "wb"))
+    
+    def load_model(self, corpus_name):
+        n_file = "pkl_files/lr_" + corpus_name + "_model.pkl"
+        self.cls = pkl.load(open(n_file, "rb"))
 
 
 class Lstm(Model, nn.Module):
@@ -102,6 +124,8 @@ class Lstm(Model, nn.Module):
         num_layers = kwargs.get("num_layers", 1)
         if num_layers == 1:
             dropout = 0
+        self.dropout = dropout
+        self.num_layers = num_layers
 
         self.lstm = nn.LSTM(
             input_size=self.embed_dim,
@@ -109,12 +133,13 @@ class Lstm(Model, nn.Module):
             batch_first=True,
             num_layers=num_layers,
             dropout=dropout
-        )
+        )  
 
         self.decoder = nn.Linear(
             in_features=self.hidden_dim,
             out_features=self.num_classes
         )
+        
 
     def forward(self, X):
         o, _ = self.lstm(X)
@@ -128,15 +153,16 @@ class Lstm(Model, nn.Module):
         device = 'cuda' if is_cuda else 'cpu'
 
         dataset = TextDataset(X, Y, self.wv_model)
-        text_loader = get_dataloader(dataset,
-                                     batch_size=kwargs.get("batch_size", 128),
-                                     num_workers=kwargs.get("num_workers", 4),
-                                     shuffle=True
-                                    )
+        text_loader = get_dataloader(
+            dataset,
+            batch_size=kwargs.get("batch_size", 128),
+            num_workers=kwargs.get("num_workers", 4),
+            shuffle=True
+        )
 
         optimizer = optim.Adam(self.parameters(), lr=0.001)
         loss_function = nn.CrossEntropyLoss()
-        for epoch in range(1, kwargs.get("num_epochs", 100) + 1):
+        for epoch in range(1, kwargs.get("epoch", 100) + 1):
             print("Epoch " + str(epoch))
             correct_train = 0      
             self.train()
@@ -168,6 +194,26 @@ class Lstm(Model, nn.Module):
         pkl.dump([X, Y, self.labeler], open(n_file, "wb"))
 
     def load_corpus(self, corpus_name):
-        bundle = pkl.load(open("pkl_files/nn_" + corpus_name + ".pkl", "rb"))
+        n_file = "pkl_files/nn_" + corpus_name + ".pkl"
+        bundle = pkl.load(open(n_file, "rb"))
         X, Y, self.labeler = bundle
         return X, Y
+    
+    def save_model(self, corpus_name):
+        if not os.path.exists("pkl_files/"):
+            os.mkdir("pkl_files")
+        n_file = "pkl_files/nn_" + corpus_name + "_model.pkl"
+        torch.save(self.state_dict(), n_file)
+        params = {
+            "embed_dim": self.embed_dim,
+            "hidden_dim": self.hidden_dim,
+            "num_classes": self.num_classes,
+            "dropout": self.dropout,
+            "num_layers": self.num_layers
+        }
+        p_file = "pkl_files/nn_" + corpus_name + "_params.pkl"
+        pkl.dump(params, open(p_file, "wb"))
+    
+    def load_model(self, corpus_name):
+        n_file = "pkl_files/nn_" + corpus_name + "_model.pkl"
+        self.load_state_dict(torch.load(n_file))

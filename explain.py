@@ -19,7 +19,7 @@ def explain(text, model, vect, labeler):
 
 def main():
     text = input().strip()
-    text = preprocess_periods([text])[0]
+    text = preprocess_sentences([text])[0]
     vect = pkl.load(open("Xvect.pkl", "rb"))
     labeler = pkl.load(open("Ylabeler.pkl", "rb"))
     cls = pkl.load(open("model.pkl", "rb"))
