@@ -53,7 +53,6 @@ def main():
     args = parser.parse_args()
     
     sentence = open(args.input_path).read().strip()
-    sentence = preprocess_sentences([sentence])[0]
     wv_model = None
     
     if args.model == 'nn':

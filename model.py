@@ -24,7 +24,7 @@ class Model:
         pass
 
     def get_X(self, sentence_list, **kwargs):
-        pass
+        return preprocess_sentences(sentence_list)
 
     def get_Y(self, label_list, fit=True):
         if fit:
@@ -77,6 +77,7 @@ class Logistic(Model):
         return self.cls.predict(X)
 
     def get_X(self, sentence_list, **kwargs):
+        sentence_list = super().get_X(sentence_list)
         fit = kwargs.get("fit", True)
         if fit:
             self.vect = TfidfVectorizer(
@@ -226,9 +227,6 @@ class Lstm(Model, nn.Module):
             prob = prob.cpu().detach().numpy()
             probs = np.vstack([probs, prob])
         return probs
-
-    def get_X(self, sentence_list, **kwargs):
-        return sentence_list
     
     def save_corpus(self, corpus_name, X, Y):
         if not os.path.exists("pkl_files/"):

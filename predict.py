@@ -3,17 +3,15 @@ from model import recover_model
 from utils import *
 
 import sys
+import torch
 import argparse
 import pickle as pkl
 
 
-def predictor(text, model_name, corpus_name, wv_model=None):
-    model, _, _ = recover_model(model_name, corpus_name, wv_model)
-    
+def predictor(text, model, wv_model=None):
     testX = model.get_X(text, fit=False)
     y_pred = model.predict(testX, wv_model=wv_model)
     results = model.labeler.inverse_transform(y_pred)
-    
     return results
 
         
@@ -40,7 +38,6 @@ def main():
     
     sentences = open(args.input_path).readlines()
     sentences = [line.strip() for line in sentences if line.strip()]
-    sentences = preprocess_sentences(sentences)
     wv_model = None
     
     if args.model == 'nn':
@@ -48,7 +45,8 @@ def main():
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
     
-    predictions = predictor(sentences, args.model, args.corpus_name, wv_model)
+    model, _, _ = recover_model(args.model, args.corpus_name, wv_model)
+    predictions = predictor(sentences, model, wv_model)
     f = open(args.output_path, "w")
     for res in predictions:
         f.write(res + "\n")

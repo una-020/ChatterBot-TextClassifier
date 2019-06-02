@@ -60,7 +60,6 @@ def main():
     args = parser.parse_args()
 
     sentences = get_corpus(args.corpus_name)
-    sentences = preprocess_sentences(sentences)
     labels = get_label(args.corpus_name)
     num_classes = len(set(labels))
 
