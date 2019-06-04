@@ -20,6 +20,8 @@ app = Flask(__name__)
 def webhook():
     global corpus
     global sentence
+    global explain_corpus
+    global explain_sentence
     global model
     global wv_model
 
@@ -39,14 +41,22 @@ def webhook():
     elif intent == 'Explain':
         if corpus is None or sentence is None:
             textResponse = "Choose the corpus and the sentence first."
+        elif explain_corpus == corpus and explain_sentence == sentence:
+            if os.path.exists("static/explain.html"):
+                textResponse = "Find my explanations here:\nhttps://chatterbot.serveo.net/static/explain.html"
+            else:
+                pass
         else:
-            explain_html = explainer(sentence, model[corpus], wv_model)
+            explain_corpus = corpus
+            explain_sentence = sentence
             if not os.path.exists("static/"):
                 os.mkdir("static/")
+            elif os.path.exists("static/explain.html"):
+                os.remove("static/explain.html")
+            explain_html = explainer(sentence, model[corpus], wv_model)
             f = open("static/explain.html", "w")
             f.write(explain_html)
             f.close()
-            textResponse = "Find my explanations here:\nhttps://chatterbot.serveo.net/static/explain.html"
     else:
         print("DEBUG:", req)
     
@@ -59,7 +69,7 @@ def webhook():
 
 if __name__ == '__main__':
     global wv_model
-    filename = 'GoogleNews-vectors-negative300.bin'
+    filename = 'GoogleNews-vectors-negative300.bin.gz'
     wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
     # wv_model = None
     print("WVEC Loaded")
@@ -76,6 +86,12 @@ if __name__ == '__main__':
     
     global sentence
     sentence = None
+    
+    global explain_corpus
+    explain_corpus = None
+    
+    global explain_sentence
+    explain_sentence = None
     
     print('Recovered Models')
     
