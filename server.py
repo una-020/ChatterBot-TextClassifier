@@ -2,15 +2,16 @@ from urllib.parse import urlparse, urlencode
 from urllib.request import urlopen, Request
 from gensim.models import KeyedVectors
 from urllib.error import HTTPError
-from model import recover_model
-from predict import predictor
-
-import json
-import os
-
-from flask import Flask
-from flask import request
 from flask import make_response
+from model import recover_model
+from explain import explainer
+from predict import predictor
+from flask import request
+from flask import Flask
+
+import os
+import json
+
 
 # Flask app should start in global layout
 app = Flask(__name__)
@@ -25,17 +26,27 @@ def webhook():
     req = request.get_json(silent=True, force=True)
     intent = req['queryResult']['intent']['displayName']
     textResponse = req['queryResult']['fulfillmentText']
-    if intent == 'CorpusSelect':
-        cur_corpus = req['queryResult']['parameters']['corpus']
-        if cur_corpus != corpus:
-            corpus = cur_corpus
-    elif intent == 'SentenceInput':
+    if intent == 'CorpusSelect - custom':
+        corpus = req['queryResult']['parameters']['corpus']
+    elif intent == 'SentenceInput - custom':
         sentence = req['queryResult']['parameters']['any']
-        prediction = predictor([sentence], model[corpus], wv_model)[0]
-        textResponse = "The sentence was processed by my Brain :) And it turns out... Wait for it (drumroll), it is %s" % prediction
-    elif intent == 'ExplainOutput':
-        pass
-#         TODO: Explanation stuff
+    elif intent == 'Predict':
+        if corpus is None or sentence is None:
+            textResponse = "Choose the corpus and the sentence first."
+        else:
+            prediction = predictor([sentence], model[corpus], wv_model)[0]
+            textResponse = "The sentence was processed by my Brain :) and the category is (drumroll) %s" % prediction
+    elif intent == 'Explain':
+        if corpus is None or sentence is None:
+            textResponse = "Choose the corpus and the sentence first."
+        else:
+            explain_html = explainer(sentence, model[corpus], wv_model)
+            if not os.path.exists("static/"):
+                os.mkdir("static/")
+            f = open("static/explain.html", "w")
+            f.write(explain_html)
+            f.close()
+            textResponse = "Find my explanations here:\nhttps://chatterbot.serveo.net/static/explain.html"
     else:
         print("DEBUG:", req)
     
@@ -56,14 +67,17 @@ if __name__ == '__main__':
     global model
     model = {}
     model['turks'], _, _ = recover_model('nn', 'turks', wv_model)
-    
+    model['news'], _, _ = recover_model('nn', 'news', wv_model)
+    model['uci'], _, _ = recover_model('nn', 'uci', wv_model)
+    model['sentiment'], _, _ = recover_model('nn', 'sentiment', wv_model)
+
     global corpus
     corpus = None
     
     global sentence
     sentence = None
     
-    print('Recovered Model')
+    print('Recovered Models')
     
     port = int(os.getenv('PORT', 5000))
     print("Starting app on port %d" % port)

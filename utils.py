@@ -76,7 +76,7 @@ def get_label(corpus_name):
         from parsers.blogParser import parseLabel
         labels = parseLabel("data/blog/{}.txt".format(category))
 
-    elif corpus_name[1] == "sentiment":
+    elif corpus_name == "sentiment":
         from parsers.sentimentParser import parseLabel
         labels = parseLabel("data/sentiment/sentiment.csv")
 

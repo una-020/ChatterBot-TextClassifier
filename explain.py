@@ -10,13 +10,10 @@ import argparse
 import pickle as pkl
 
 
-def explainer(text, model_name, corpus_name, wv_model=None, **kwargs):
-#     text is a single sentence
-    model, _, _ = recover_model(model_name, corpus_name, wv_model)
-    
+def explainer(text, model, wv_model=None, **kwargs):    
     def predict_proba(sentences):
         testX = model.get_X(sentences, fit=False)
-        if model_name == "lr":
+        if 'Logistic' in type(model).__name__:
             return model.cls.predict_proba(testX)
         else:
             return model.predict_proba(testX, wv_model=wv_model)
@@ -60,8 +57,10 @@ def main():
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
     
+    model, _, _ = recover_model(args.model, args.corpus_name, wv_model)
+    
     f = open(args.output_path, "w")
-    f.write(explainer(sentence, args.model, args.corpus_name, wv_model))
+    f.write(explainer(sentence, model, wv_model))
     f.close()
 
 
