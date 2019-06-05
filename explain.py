@@ -19,11 +19,15 @@ def explainer(text, model, wv_model=None, **kwargs):
             return model.predict_proba(testX, wv_model=wv_model)
 
     explainer = LimeTextExplainer(class_names=model.labeler.classes_)
+    if len(model.labeler.classes_) <= 2:
+        top_labels = 1
+    else:
+        top_labels = len(model.labeler.classes_)
     exp = explainer.explain_instance(
         text,
         predict_proba,
         num_features=kwargs.get("num_features", 6),
-        top_labels=kwargs.get("top_labels", 2)
+        top_labels=kwargs.get("top_labels", top_labels)
     )
     return exp.as_html(text=text)
 
