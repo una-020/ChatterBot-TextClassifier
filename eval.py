@@ -1,4 +1,5 @@
 from sklearn.model_selection import StratifiedKFold
+from parsers.newsParser import get_categories
 from gensim.models import KeyedVectors
 from model import *
 import argparse
@@ -8,10 +9,13 @@ def indexer(data, index_list):
     return [data[i] for i in index_list]
 
 
-def kfold(sentences, labels, model_type, args):
+def kfold(args):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    if model_type == 'nn':
+    sentences = get_corpus(args.corpus_name)
+    labels = get_label(args.corpus_name)
+    
+    if args.model == 'nn':
         filename = 'GoogleNews-vectors-negative300.bin'
         wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
         print("WVEC loaded")
@@ -56,6 +60,31 @@ def kfold(sentences, labels, model_type, args):
 
     print("\nLook! K-fold results!!")
     print("Average Accuracy", avg_acc / avg_cnt)
+
+    
+def mixed_models(args):
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    if args.model == 'nn':
+        filename = 'GoogleNews-vectors-negative300.bin'
+        wv_model = KeyedVectors.load_word2vec_format(filename, binary=True)
+        print("WVEC loaded")
+    else:
+        wv_model = None
+    
+    model, _, _ = recover_model(args.model, args.corpus_name, wv_model)
+    
+    sentences = get_corpus(args.test_corpus)
+    labels = get_label(args.test_corpus)
+    
+    if args.corpus_name != args.test_corpus:
+        labels = get_categories(labels)
+   
+    testX = model.get_X(sentences, fit=False)
+    testY = model.get_Y(labels, fit=False)
+    
+    predictY = model.predict(testX, wv_model=wv_model)
+    _, _, _, acc = model.eval_model(testY, predictY)
+    print(" Accuracy: " + str(acc))
 
 
 def main():
@@ -108,13 +137,25 @@ def main():
                         type=int,
                         default=4,
                         required=False)
+    
+    parser.add_argument('-option', '--option',
+                        help='kfold | test',
+                        type=str,
+                        default='kfold',
+                        required=False)
+
+    parser.add_argument('-test_corpus', '--test_corpus',
+                        help='name of the corpus you want to test on',
+                        type=str,
+                        default='turks',
+                        required=False)
+ 
     args = parser.parse_args()
     
-    
-    sentences = get_corpus(args.corpus_name)
-    labels = get_label(args.corpus_name)
-    kfold(sentences, labels, args.model, args)
-
+    if args.option == 'kfold':
+        kfold(args)
+    else:
+        mixed_models(args)
 
 if __name__ == "__main__":
     main()
