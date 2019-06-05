@@ -30,7 +30,7 @@ def explainer(text, model, wv_model=None, **kwargs):
             text,
             predict_proba,
             num_features=kwargs.get("num_features", 6),
-            top_labels=kwargs.get("top_labels", 2)
+            top_labels=kwargs.get("top_labels", 1)
         )
     return exp.as_html(text=text)
 

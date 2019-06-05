@@ -1,0 +1,27 @@
+TASK1:
+Favorite sentence: 
+
+Sentence: "It's a great burger...The stuff isn't cheap, but it's really tasty. There are a variety of options, tons of toppings and options, a veggie burger (if you're into that
+Actual: Positive
+Predicted: Positive
+
+Sentence: “Really, Pittsburgh? The Primanti bros cheeseteak is the best sandwich in the world? Didn’t make me very happy. The freezer-burned soggy fries, bland bread, and gross hamburger patty just didn’t”
+Actual: Negative
+Predicted: Negative
+
+Overconfident
+
+Sentence: The gluten free waffle is really great and it is nice to see gluten free on the menu, but the last two times I've gone they have been out of
+Actual: Negative
+Predicted: Positive
+
+Sentence: Not a prime store or location, but place is good
+Actual: Positive
+Predicted: Negative
+
+TASK2:
+SciTech : Is Google the Next Netscape?To draw a parallel between Netscape #038; Google in their fight against Microsoft, it is necessary to examine the various similarities between the two situations and see if the tactics that worked then wi ll work now.
+
+Sports: The medal ceremony had ended. Van Chancellor had already shed a few tears, but he had held his emotions together through all the hugs and dancing, even through the victory” 
+
+
