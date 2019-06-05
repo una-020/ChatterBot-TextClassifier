@@ -20,15 +20,18 @@ def explainer(text, model, wv_model=None, **kwargs):
 
     explainer = LimeTextExplainer(class_names=model.labeler.classes_)
     if len(model.labeler.classes_) <= 2:
-        top_labels = 1
+        exp = explainer.explain_instance(
+            text,
+            predict_proba,
+            num_features=kwargs.get("num_features", 6)
+        )
     else:
-        top_labels = 2
-    exp = explainer.explain_instance(
-        text,
-        predict_proba,
-        num_features=kwargs.get("num_features", 6),
-        top_labels=kwargs.get("top_labels", top_labels)
-    )
+        exp = explainer.explain_instance(
+            text,
+            predict_proba,
+            num_features=kwargs.get("num_features", 6),
+            top_labels=kwargs.get("top_labels", 2)
+        )
     return exp.as_html(text=text)
 
 
