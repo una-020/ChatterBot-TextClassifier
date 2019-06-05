@@ -22,7 +22,7 @@ def explainer(text, model, wv_model=None, **kwargs):
     if len(model.labeler.classes_) <= 2:
         top_labels = 1
     else:
-        top_labels = len(model.labeler.classes_)
+        top_labels = 2
     exp = explainer.explain_instance(
         text,
         predict_proba,
