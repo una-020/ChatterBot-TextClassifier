@@ -1,5 +1,5 @@
-# cse256_project
-Welcome to our amazing project :)
+## Welcome to our amazing project :)
+#### This is a Dialogflow chat bot which helps classify text and generate explanations, with Pytorch and Flask backend.
 
 <br>
 <br>
@@ -44,5 +44,7 @@ Welcome to our amazing project :)
 
 > <i> ChatterBot.zip </i>
 >> For more details about DialogFlow, please check : https://dialogflow.com/docs/getting-started. <br> We have also included our DialogFlow .zip model for you to enjoy.
+
+![Demo](chatterbot.png)
 
 Okay bye :)
