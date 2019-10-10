@@ -46,8 +46,8 @@
 >> For more details about DialogFlow, please check : https://dialogflow.com/docs/getting-started. <br> We have also included our DialogFlow .zip model for you to enjoy.
 
 <br>
+<b> Screenshot </b>
 <br>
-
 ![Demo](chatterbot.png)
 
 Okay bye :)
